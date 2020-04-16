@@ -1,0 +1,100 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "新冠病毒蔓延有多迅猛？1分钟扩散整个超市通道！\u00012020-04-16\u0001地方站-新浪辽宁\u0001  　　近日 芬兰阿尔托大学等四个科研机构   　　进行了一项病毒传播模拟实验   　　实验显示   　　如果有新冠肺炎患者   　　在超市这样的密闭空间里咳嗽   　　病毒就能瞬间沿着过道扩散开来   　　 1分钟后 病毒就蔓延到了整个通道   \u0001http://ln.sina.com.cn/news/2020-04-16/detail-iirczymi6685782.shtml\n",
+      "剑桥大学知名教授：新冠病毒——灾难与机遇\u00012020-04-16\u0001中国新闻网\u0001这似乎特别适用于新冠肺炎疫情   　　人们往往更容易看到灾难 我们都为亿万人过去、现在和未来的苦难而悲伤 然而 机遇也可能同时存在 潜在的机会只能猜测 因为当我们试图预测未来时 一切实际上都是猜测\u0001https://k.sina.com.cn/article_1784473157_6a5ce64502001tvz9.html?from=science\n",
+      "WHO称饮酒会增加感染新冠病毒风险和家暴\u00012020-04-16\u0001新浪新闻综合\u00014月14日 世界卫生组织（WHO）驳斥了“饮用高强度酒精可以杀死”新冠肺炎病毒的说法 世卫组织表示 饮酒会增加感染新冠肺炎的风险 如果你已经感染 会使病情更加严重 在居家隔离期间饮酒还可能加剧心理健康问题和冒险行为\u0001https://video.sina.com.cn/p/news/2020-04-16/detail-iircuyvh8153772.d.html\n",
+      "新冠病毒蔓延有多迅猛？1分钟扩散整个超市通道！\u00012020-04-16\u0001地方站-新浪辽宁\u0001  　　近日 芬兰阿尔托大学等四个科研机构   　　进行了一项病毒传播模拟实验   　　实验显示   　　如果有新冠肺炎患者   　　在超市这样的密闭空间里咳嗽   　　病毒就能瞬间沿着过道扩散开来   　　 1分钟后 病毒就蔓延到了整个通道   \u0001http://ln.sina.com.cn/news/2020-04-16/detail-iirczymi6685782.shtml\n",
+      "WHO称饮酒会增加感染新冠病毒风险和家暴\u00012020-04-16\u0001看度新闻\u0001 4月14日 世界卫生组织（WHO）驳斥了“饮用高强度酒精可以杀死”新冠肺炎病毒的说法 世卫组织表示 饮酒会增加感染新冠肺炎的风险 如果你已经感染 会使病情更加严重 在居家隔离期间饮酒还可能加剧心理健康问题和冒险行为 并引发暴力行为 @环球时报\u0001https://k.sina.com.cn/article_1879476167_m700687c703300n7qn.html?from=health\n",
+      "超级英雄大战新冠病毒\u00012020-04-16\u0001电影派Mr\u0001  超级英雄大战新冠病毒 \u0001https://k.sina.com.cn/article_3622517191_md7eb39c705300n1is.html?from=game&subch=ogame\n",
+      "剑桥大学知名教授：新冠病毒——灾难与机遇\u00012020-04-16\u0001中国新闻网\u0001这似乎特别适用于新冠肺炎疫情   　　人们往往更容易看到灾难 我们都为亿万人过去、现在和未来的苦难而悲伤 然而 机遇也可能同时存在 潜在的机会只能猜测 因为当我们试图预测未来时 一切实际上都是猜测\u0001https://k.sina.com.cn/article_1784473157_6a5ce64502001tvz9.html?from=science\n"
+     ]
+    }
+   ],
+   "source": [
+    "import logging\n",
+    "import requests\n",
+    "import sys\n",
+    "import urllib\n",
+    "import pandas\n",
+    "\n",
+    "from bs4 import BeautifulSoup\n",
+    "from collections import OrderedDict\n",
+    "from urllib.parse import urlencode\n",
+    "\n",
+    "def get_list(comp, page):\n",
+    "    newsData = OrderedDict()\n",
+    "    href = 'http://search.sina.com.cn/?%s&range=title&c=news&num=20&col=1_7&page=%s' % (comp, page) # comp -> first %s; page -> 2nd %s; col=1_7 -> financial news in sina\n",
+    "    html = requests.get(href)\n",
+    "    # Parsing html\n",
+    "    soup = BeautifulSoup(html.content, 'html.parser')\n",
+    "    divs = soup.findAll('div', {\"class\": \"r-info r-info2\"})\n",
+    "    for div in divs:\n",
+    "        head = div.findAll('h2')[0]\n",
+    "        # News title\n",
+    "        titleinfo = head.find('a')\n",
+    "        title = titleinfo.get_text()\n",
+    "        # News url\n",
+    "        url = titleinfo['href']\n",
+    "        # Other info\n",
+    "        otherinfo = head.find('span', {\"class\": \"fgray_time\"}).get_text()\n",
+    "        source, date, time = otherinfo.split()\n",
+    "        # News abstract\n",
+    "        abstract = div.find('p', {\"class\": \"content\"}).get_text()\n",
+    "        newsData[title] = [date, source, abstract, url]\n",
+    "    return newsData\n",
+    "\n",
+    "\n",
+    "\n",
+    "if __name__ == \"__main__\":\n",
+    "    compRawStr = '新冠病毒'\n",
+    "    # Dealing with character encoding\n",
+    "    comp = compRawStr.encode('gbk')\n",
+    "    d = {'q': comp}\n",
+    "    pname = urlencode(d)\n",
+    "    # Scraping and printing the first two pages\n",
+    "    for page in range(3)[1:]:\n",
+    "        newsData = get_list(pname, page)\n",
+    "        for ky in newsData:\n",
+    "            print('\\001'.join([ky] + newsData[ky])) # \"\\001\" as separator\n",
+    "            "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.6"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}
